@@ -18,7 +18,7 @@ x = width/2 - 40/2
 y = 0
 
 
-pygame.display.set_caption('JOGO')
+pygame.display.set_caption('SEDR')
 frame = pygame.time.Clock()
 imagem = pygame.image.load("assets/residuos/metais/parafusos.png")
 
