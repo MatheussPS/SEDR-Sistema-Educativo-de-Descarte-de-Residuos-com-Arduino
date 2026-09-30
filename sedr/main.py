@@ -3,7 +3,7 @@ from pygame.locals import *
 
 import sys
 
-from config.config import Config
+from config import config
 
 from models.residuo import Residuo
 
@@ -12,8 +12,8 @@ pygame.init()
 
 tela = pygame.display.set_mode(
     (
-        Config.LARGURA_TELA,
-        Config.ALTURA_TELA
+        config.LARGURA_TELA,
+        config.ALTURA_TELA
     ),
     pygame.RESIZABLE
 )
@@ -32,8 +32,8 @@ img_bkg_original = pygame.image.load(
 img_bkg = pygame.transform.scale(
     img_bkg_original,
     (
-        Config.LARGURA_TELA,
-        Config.ALTURA_TELA
+        config.LARGURA_TELA,
+        config.ALTURA_TELA
     )
 )
 
@@ -44,7 +44,7 @@ img_bkg = pygame.transform.scale(
 
 residuo = Residuo(
     "metal",
-    Config.LARGURA_TELA / 2
+    config.LARGURA_TELA / 2
 )
 
 
@@ -64,7 +64,7 @@ clock = pygame.time.Clock()
 
 while rodando:
 
-    clock.tick(Config.FPS)
+    clock.tick(config.FPS)
 
 
     # =========================
@@ -80,14 +80,14 @@ while rodando:
 
         if evento.type == VIDEORESIZE:
 
-            Config.LARGURA_TELA = evento.w
-            Config.ALTURA_TELA = evento.h
+            config.LARGURA_TELA = evento.w
+            config.ALTURA_TELA = evento.h
 
 
             tela = pygame.display.set_mode(
                 (
-                    Config.LARGURA_TELA,
-                    Config.ALTURA_TELA
+                    config.LARGURA_TELA,
+                    config.ALTURA_TELA
                 ),
                 pygame.RESIZABLE
             )
@@ -98,8 +98,8 @@ while rodando:
             img_bkg = pygame.transform.scale(
                 img_bkg_original,
                 (
-                    Config.LARGURA_TELA,
-                    Config.ALTURA_TELA
+                    config.LARGURA_TELA,
+                    config.ALTURA_TELA
                 )
             )
 
@@ -131,7 +131,7 @@ while rodando:
     residuo.mover(0, 5)
 
 
-    if residuo.y >= Config.ALTURA_TELA:
+    if residuo.y >= config.ALTURA_TELA:
         residuo.y = 0
 
 

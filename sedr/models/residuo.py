@@ -1,4 +1,4 @@
-from config.config import Config
+from config import sonfig
 
 
 class Residuo:
@@ -15,7 +15,7 @@ class Residuo:
         self.ativo = True
 
     def calcular_tamanho(self):
-        return Config.LARGURA_TELA * Config.PROPORCAO_RESIDUO
+        return config.LARGURA_TELA * config.PROPORCAO_RESIDUO
 
     def atualizar_tamanho(self):
         centro_x = self.x + self.largura / 2
@@ -26,7 +26,7 @@ class Residuo:
         self.x = centro_x - self.largura / 2
 
     def centralizar_x(self):
-        centro_x = Config.LARGURA_TELA / 2
+        centro_x = config.LARGURA_TELA / 2
 
         self.x = centro_x - self.largura / 2
 
