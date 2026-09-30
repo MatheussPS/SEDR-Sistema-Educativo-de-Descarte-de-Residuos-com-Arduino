@@ -1,39 +1,35 @@
-import pygame
+from config.config import Config
+
 
 class Residuo:
-    def __init__(self, caminho_imagem, x, y, tipo_material):
-        # Carrega a imagem e otimiza a transparência
-        self.imagem = pygame.image.load(caminho_imagem).convert_alpha()
-        
-        # Coordenadas atuais na tela
-        self.x = x
-        self.y = y
-        
-        # Cria o retângulo com o tamanho exato da imagem
-        self.rect = self.imagem.get_rect()
-        # Posiciona o retângulo nas coordenadas iniciais
-        self.rect.topleft = (self.x, self.y)
-        
-        # Define se é "plastico", "metal", "vidro" ou "papel"
-        self.tipo_material = tipo_material
-        
-        # Controle para saber se o lixo ainda está em jogo ou já foi descartado
+
+    def __init__(self, tipo, centro_x):
+        self.tipo = tipo
+
+        self.largura = self.calcular_tamanho()
+        self.altura = self.calcular_tamanho()
+
+        self.x = centro_x - self.largura / 2
+        self.y = 0
+
         self.ativo = True
 
-    def desenhar(self, tela):
-        # Só desenha se o resíduo estiver ativo
-        if self.ativo:
-            tela.blit(self.imagem, (self.x, self.y))
+    def calcular_tamanho(self):
+        return Config.LARGURA_TELA * Config.PROPORCAO_RESIDUO
 
-    def atualizar_posicao(self, novo_x, novo_y):
-        # Atualiza o X e Y da imagem
-        self.x = novo_x
-        self.y = novo_y
-        
-        # Sincroniza o retângulo invisível com a nova posição da imagem
-        # Isso é fundamental para a colisão com a lixeira funcionar no lugar certo
-        self.rect.topleft = (self.x, self.y)
+    def atualizar_tamanho(self):
+        centro_x = self.x + self.largura / 2
 
-    def obter_rect(self):
-        # Retorna o retângulo atualizado para checar a colisão no GameManager
-        return self.rect
+        self.largura = self.calcular_tamanho()
+        self.altura = self.calcular_tamanho()
+
+        self.x = centro_x - self.largura / 2
+
+    def centralizar_x(self):
+        centro_x = Config.LARGURA_TELA / 2
+
+        self.x = centro_x - self.largura / 2
+
+    def mover(self, dx, dy):
+        self.x += dx
+        self.y += dy

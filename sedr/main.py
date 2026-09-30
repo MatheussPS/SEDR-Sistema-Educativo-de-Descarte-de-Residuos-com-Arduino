@@ -1,54 +1,166 @@
 import pygame
-import time
-
 from pygame.locals import *
 
-from sys import exit
+import sys
+
+from config.config import Config
+
+from models.residuo import Residuo
 
 pygame.init()
 
-largura = 640
-altura = 480
+
+tela = pygame.display.set_mode(
+    (
+        Config.LARGURA_TELA,
+        Config.ALTURA_TELA
+    ),
+    pygame.RESIZABLE
+)
+
+pygame.display.set_caption("SEDR")
 
 
-tela = pygame.display.set_mode((largura, altura), pygame.RESIZABLE)
-width, height = tela.get_size()
+# =========================
+# BACKGROUND
+# =========================
 
-x = width/2 - 40/2
-y = 0
+img_bkg_original = pygame.image.load(
+    "assets/background/bg_park_dirty_00.jpeg"
+).convert()
+
+img_bkg = pygame.transform.scale(
+    img_bkg_original,
+    (
+        Config.LARGURA_TELA,
+        Config.ALTURA_TELA
+    )
+)
 
 
-pygame.display.set_caption('SEDR')
-frame = pygame.time.Clock()
-imagem = pygame.image.load("assets/residuos/metais/parafusos.png")
+# =========================
+# RESÍDUO
+# =========================
+
+residuo = Residuo(
+    "metal",
+    Config.LARGURA_TELA / 2
+)
 
 
-while True:
-    frame.tick(30)
-    tela.fill((0, 0, 0))
+img_parafuso_original = pygame.image.load(
+    "assets/residuos/metais/parafusos.png"
+).convert_alpha()
 
-    if y >= height:
-        y = 0
-    y+=20
+
+# =========================
+# LOOP
+# =========================
+
+rodando = True
+
+clock = pygame.time.Clock()
+
+
+while rodando:
+
+    clock.tick(Config.FPS)
+
+
+    # =========================
+    # EVENTOS
+    # =========================
 
     for evento in pygame.event.get():
+
         if evento.type == QUIT:
             pygame.quit()
-            exit()
+            sys.exit()
+
 
         if evento.type == VIDEORESIZE:
-            width = evento.w
-            height = evento.h
 
-            x = width / 2 - 40 / 2
-            y = height / 2 - 50 / 2
+            Config.LARGURA_TELA = evento.w
+            Config.ALTURA_TELA = evento.h
+
+
+            tela = pygame.display.set_mode(
+                (
+                    Config.LARGURA_TELA,
+                    Config.ALTURA_TELA
+                ),
+                pygame.RESIZABLE
+            )
+
+
+            # Background
+
+            img_bkg = pygame.transform.scale(
+                img_bkg_original,
+                (
+                    Config.LARGURA_TELA,
+                    Config.ALTURA_TELA
+                )
+            )
+
+
+            # Objetos
+
+            residuo.atualizar_tamanho()
+            residuo.centralizar_x()
+
+
+    # =========================
+    # TECLADO
+    # =========================
 
     keys = pygame.key.get_pressed()
-    if keys[ K_RIGHT]:
-        x+=20
+
+
+    if keys[K_RIGHT]:
+        residuo.mover(10, 0)
+
     if keys[K_LEFT]:
-        x-=20
-                
-    tela.blit(imagem, (x, y))
+        residuo.mover(-10, 0)
+
+
+    # =========================
+    # QUEDA DO RESÍDUO
+    # =========================
+
+    residuo.mover(0, 5)
+
+
+    if residuo.y >= Config.ALTURA_TELA:
+        residuo.y = 0
+
+
+    # =========================
+    # DESENHO
+    # =========================
+
+    tela.blit(
+        img_bkg,
+        (0, 0)
+    )
+
+
+    img_parafuso = pygame.transform.scale(
+        img_parafuso_original,
+        (
+            int(residuo.largura),
+            int(residuo.altura)
+        )
+    )
+
+
+    tela.blit(
+        img_parafuso,
+        (
+            residuo.x,
+            residuo.y
+        )
+    )
+
 
     pygame.display.flip()

@@ -1,0 +1,11 @@
+class Config:
+
+    LARGURA_TELA = 600
+    ALTURA_TELA = 450
+
+    FPS = 30
+
+    TAMANHO_RESIDUO = 0.10
+    TAMANHO_LIXEIRA = 0.20
+    
+    PROPORCAO_RESIDUO = 0.06
