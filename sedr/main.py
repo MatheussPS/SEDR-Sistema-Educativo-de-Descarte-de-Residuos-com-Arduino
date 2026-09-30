@@ -26,7 +26,7 @@ pygame.display.set_caption("SEDR")
 # =========================
 
 img_bkg_original = pygame.image.load(
-    "assets/background/bg_park_dirty_00.jpeg"
+    "assets/background/bg_park_dirt_00.jpeg"
 ).convert()
 
 img_bkg = pygame.transform.scale(
