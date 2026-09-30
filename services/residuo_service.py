@@ -11,7 +11,12 @@ class ResiduoService:
     def escolher_residuo(self, centro_x):
 
         # Escolhe o tipo de resíduo
-        tipo = random.choice(os.listdir(self.CAMINHO_RESIDUOS))
+        tipos = [ nome 
+            for nome in os.listdir(self.CAMINHO_RESIDUOS) 
+            if os.path.isdir( os.path.join(self.CAMINHO_RESIDUOS, nome) ) 
+            ]
+
+        tipo = random.choice(tipos)
 
         # Monta o caminho da pasta
         caminho_tipo = os.path.join(self.CAMINHO_RESIDUOS, tipo)
