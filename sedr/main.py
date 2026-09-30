@@ -5,7 +5,7 @@ import sys
 
 from config import config
 
-from models.residuo import Residuo
+from services.residuo_service import ResiduoService
 
 pygame.init()
 
@@ -42,16 +42,19 @@ img_bkg = pygame.transform.scale(
 # RESÍDUO
 # =========================
 
-residuo = Residuo(
-    "metal",
+residuo_service = ResiduoService()
+
+residuo = residuo_service.escolher_residuo(
     config.LARGURA_TELA / 2
 )
 
-
-img_parafuso_original = pygame.image.load(
-    "assets/residuos/metais/parafusos.png"
-).convert_alpha()
-
+residuo.imagem = pygame.transform.scale(
+    residuo.imagem_original,
+    (
+        int(residuo.largura),
+        int(residuo.altura)
+    )
+)
 
 # =========================
 # LOOP
@@ -103,12 +106,18 @@ while rodando:
                 )
             )
 
-
             # Objetos
 
             residuo.atualizar_tamanho()
             residuo.centralizar_x()
 
+            residuo.imagem = pygame.transform.scale(
+                            residuo.imagem_original,
+                            (
+                                int(residuo.largura),
+                                int(residuo.altura)
+                            )
+                        )
 
     # =========================
     # TECLADO
@@ -132,8 +141,16 @@ while rodando:
 
 
     if residuo.y >= config.ALTURA_TELA:
-        residuo.y = 0
-
+        # residuo.y = 0
+        residuo = residuo_service.escolher_residuo(config.LARGURA_TELA / 2)
+        
+        residuo.imagem = pygame.transform.scale(
+        residuo.imagem_original,
+            (
+                int(residuo.largura),
+                int(residuo.altura)
+            )
+        )
 
     # =========================
     # DESENHO
@@ -145,17 +162,8 @@ while rodando:
     )
 
 
-    img_parafuso = pygame.transform.scale(
-        img_parafuso_original,
-        (
-            int(residuo.largura),
-            int(residuo.altura)
-        )
-    )
-
-
     tela.blit(
-        img_parafuso,
+         residuo.imagem,
         (
             residuo.x,
             residuo.y

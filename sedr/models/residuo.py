@@ -1,10 +1,13 @@
-from config import sonfig
+from config import config
 
 
 class Residuo:
 
-    def __init__(self, tipo, centro_x):
+    def __init__(self, tipo, imagem, centro_x):
         self.tipo = tipo
+
+        self.imagem_original = imagem
+        self.imagem = imagem
 
         self.largura = self.calcular_tamanho()
         self.altura = self.calcular_tamanho()
