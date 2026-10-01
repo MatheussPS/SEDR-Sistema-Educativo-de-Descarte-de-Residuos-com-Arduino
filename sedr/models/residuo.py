@@ -63,20 +63,39 @@ class Residuo:
                     int(self.altura)
                 )
             )
-
-    # def centralizar_x(self):
-    #     centro_x = config.LARGURA_TELA / 2
-
-    #     self.x = centro_x - self.largura / 2
+        self.rect = pygame.Rect(
+            self.x,
+            self.y,
+            self.largura,
+            self.altura
+        )
 
     def mover(self, dx, dy):
         self.x += dx
         self.y += dy
         
-        if self.x < 0:
-            self.x = 0
+        if self.x + self.largura < 0 :
+            self.x = config.LARGURA_TELA
 
-        if self.x + self.largura > config.LARGURA_TELA:
-            self.x = config.LARGURA_TELA - self.largura
+        elif self.x  > config.LARGURA_TELA:
+            self.x = 0
         
         self.rect.topleft = (self.x, self.y)
+
+    # IMPEDE QUE O RESIDUO PASSE DOS LIMITES
+    # def mover(self, dx, dy):
+    #     self.x += dx
+    #     self.y += dy
+        
+    #     if self.x < 0:
+    #         self.x = 0
+
+    #     if self.x + self.largura > config.LARGURA_TELA:
+    #         self.x = config.LARGURA_TELA - self.largura
+        
+    #     self.rect.topleft = (self.x, self.y)
+    
+    # def centralizar_x(self):
+    #     centro_x = config.LARGURA_TELA / 2
+
+    #     self.x = centro_x - self.largura / 2

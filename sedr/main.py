@@ -5,9 +5,12 @@ import sys
 
 from config import config
 
+from models.sessao import Sessao
+
 from services.residuo_service import ResiduoService
 from services.lixeira_service import LixeiraService
 from services.background_service import BackgroundService
+from services.colisao_service import ColisaoService
 
 pygame.init()
 
@@ -23,8 +26,9 @@ pygame.display.set_caption("SEDR")
 
 velocidade_x = 10
 velocidade_y = 5
-pontuacao = 0
+sessao = Sessao()
 
+fonte_hud = pygame.font.Font("assets/fonts/Pixelify_Sans/PixelifySans-Bold.ttf", int(config.LARGURA_TELA * 0.06))
 
 # =========================
 # BACKGROUND
@@ -34,14 +38,19 @@ background_service = BackgroundService()
 background = background_service.redimensionar()
 
 # =========================
+# COLISAO
+# =========================
+
+colisao_service = ColisaoService()
+
+# =========================
 # LIXEIRA
 # =========================
 
 lixeira_service = LixeiraService()
+lixeira_service.atualizar_posicoes()
 
-lixeiras = lixeira_service.criar_lixeiras()
-lixeira_service.atualizar_posicoes(lixeiras)
-
+lixeiras = lixeira_service.lixeiras
 # =========================
 # RESÍDUO
 # =========================
@@ -57,7 +66,7 @@ residuo = residuo_service.escolher_residuo()
 rodando = True
 
 clock = pygame.time.Clock()
-
+tempo_colisao = None
 
 while rodando:
 
@@ -98,7 +107,7 @@ while rodando:
             for lixeira in lixeiras:
                 lixeira.atualizar_tamanho()
         
-            lixeira_service.atualizar_posicoes(lixeiras)
+            lixeira_service.atualizar_posicoes()
 
     # =========================
     # TECLADO
@@ -115,34 +124,56 @@ while rodando:
 
 
     # =========================
-    # QUEDA DO RESÍDUO
-    # =========================
+# QUEDA DO RESÍDUO
+# =========================
 
-    residuo.mover(0, velocidade_y)
+    if residuo.ativo:
+        residuo.mover(0, velocidade_y)
 
+    lixeira = lixeira_service.obter_lixeira(residuo)
 
-    if residuo.y >= config.ALTURA_TELA:
-        # residuo.y = 0
+    if lixeira:
+
+        colidiu = colisao_service.verificar_colisao(
+            residuo,
+            lixeira,
+            sessao
+        )
+
+        if colidiu:
+            if tempo_colisao is None:
+                tempo_colisao = pygame.time.get_ticks()
+
+    if tempo_colisao is not None:
+
+        if pygame.time.get_ticks() - tempo_colisao >= 1000:
+            residuo = residuo_service.escolher_residuo()
+            tempo_colisao = None
+
+    if residuo.ativo and residuo.y >= config.ALTURA_TELA:
+
         residuo = residuo_service.escolher_residuo()
+
+        background = background_service.atualizar_background(
+            sessao.pontuacao
+        )
     
-        pontuacao+=5
-        background = background_service.atualizar_background(pontuacao)
     # =========================
     # DESENHO
     # =========================
+
+    pontuacao_hud = fonte_hud.render(f"Pontuação: {sessao.pontuacao}", True, (255, 255, 255))
+
 
     tela.blit(
         background,
         (0, 0)
     )
+    
+    
 
-    tela.blit(
-         residuo.imagem,
-        (
-            residuo.x,
-            residuo.y
-        )
-    )
+    if residuo.ativo:
+        tela.blit(residuo.imagem, (residuo.x, residuo.y))
 
     for lixeira in lixeiras:
         tela.blit(
@@ -152,6 +183,9 @@ while rodando:
                 lixeira.y
             )
         )
-
+    tela.blit(
+            pontuacao_hud,
+            (config.LARGURA_TELA* 0.02, 0)
+        )
 
     pygame.display.flip()

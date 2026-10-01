@@ -8,6 +8,9 @@ class LixeiraService:
     
     CAMINHO_LIXEIRAS = "assets/lixeiras"
 
+    def __init__(self):
+        self.lixeiras = self.criar_lixeiras()
+
     def criar_lixeiras(self):
         
         ordem = {
@@ -56,17 +59,39 @@ class LixeiraService:
         # Retorna lixeiras
         return lista_lixeiras
 
-    def atualizar_posicoes(self, lista_lixeiras):
-        quantidade = len(lista_lixeiras)
+    def atualizar_posicoes(self):
+
+        quantidade = len(self.lixeiras)
+
         if quantidade == 0:
             return
 
-        # Calcula posicoes das lixeiras
         largura_lixeira = config.LARGURA_TELA * config.PROPORCAO_LIXEIRA
         espacamento = config.LARGURA_TELA * 0.04
-        largura_total_bloco = (largura_lixeira * quantidade) + (espacamento * (quantidade - 1))
+
+        largura_total_bloco = (
+            largura_lixeira * quantidade
+            + espacamento * (quantidade - 1)
+        )
+
         inicio_x = (config.LARGURA_TELA - largura_total_bloco) / 2
 
-        for i, lixeira in enumerate(lista_lixeiras):
+        for i, lixeira in enumerate(self.lixeiras):
+
             lixeira.x = inicio_x + i * (largura_lixeira + espacamento)
+
             lixeira.y = config.ALTURA_TELA - int(lixeira.altura)
+
+            lixeira.rect.topleft = (
+                lixeira.x,
+                lixeira.y
+            )
+    
+    def obter_lixeira(self, residuo):
+
+        for lixeira in self.lixeiras:
+
+            if lixeira.rect.left <= residuo.rect.centerx <= lixeira.rect.right:
+                return lixeira
+
+        return None

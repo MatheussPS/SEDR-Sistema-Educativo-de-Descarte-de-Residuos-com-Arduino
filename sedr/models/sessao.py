@@ -4,6 +4,5 @@ class Sessao:
         self.pontuacao = 0
         self.vidas = 3
     
-    def atualizar_pontuacao():
-        # Regra de negocio a ser definida
-        return True
+    def atualizar_pontuacao(self, pontos):
+        self.pontuacao+=pontos

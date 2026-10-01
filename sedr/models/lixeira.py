@@ -55,3 +55,10 @@ class Lixeira:
                 int(self.altura)
             )
         )
+
+        self.rect = pygame.Rect(
+            self.x,
+            self.y,
+            self.largura,
+            self.altura
+        )
