@@ -6,9 +6,10 @@ import sys
 from config import config
 
 from services.residuo_service import ResiduoService
+from services.lixeira_service import LixeiraService
+from services.background_service import BackgroundService
 
 pygame.init()
-
 
 tela = pygame.display.set_mode(
     (
@@ -20,23 +21,26 @@ tela = pygame.display.set_mode(
 
 pygame.display.set_caption("SEDR")
 
+velocidade_x = 10
+velocidade_y = 5
+pontuacao = 0
+
 
 # =========================
 # BACKGROUND
 # =========================
 
-img_bkg_original = pygame.image.load(
-    "assets/background/bg_park_dirt_00.jpeg"
-).convert()
+background_service = BackgroundService()
+background = background_service.redimensionar()
 
-img_bkg = pygame.transform.scale(
-    img_bkg_original,
-    (
-        config.LARGURA_TELA,
-        config.ALTURA_TELA
-    )
-)
+# =========================
+# LIXEIRA
+# =========================
 
+lixeira_service = LixeiraService()
+
+lixeiras = lixeira_service.criar_lixeiras()
+lixeira_service.atualizar_posicoes(lixeiras)
 
 # =========================
 # RESÍDUO
@@ -84,7 +88,6 @@ while rodando:
             config.LARGURA_TELA = evento.w
             config.ALTURA_TELA = evento.h
 
-
             tela = pygame.display.set_mode(
                 (
                     config.LARGURA_TELA,
@@ -93,28 +96,30 @@ while rodando:
                 pygame.RESIZABLE
             )
 
-
             # Background
+            background = background_service.redimensionar()
 
-            img_bkg = pygame.transform.scale(
-                img_bkg_original,
+            
+            residuo.atualizar_tamanho()
+            residuo.imagem = pygame.transform.scale(
+                residuo.imagem_original,
                 (
-                    config.LARGURA_TELA,
-                    config.ALTURA_TELA
+                    int(residuo.largura),
+                    int(residuo.altura)
                 )
             )
-
-            # Objetos
-
-            residuo.atualizar_tamanho()
-
-            residuo.imagem = pygame.transform.scale(
-                            residuo.imagem_original,
-                            (
-                                int(residuo.largura),
-                                int(residuo.altura)
-                            )
-                        )
+            
+            
+            for lixeira in lixeiras:
+                lixeira.atualizar_tamanho()
+                lixeira.imagem = pygame.transform.scale(
+                    lixeira.imagem_original,
+                    (
+                        int(lixeira.largura),
+                        int(lixeira.altura)
+                    ) 
+                )
+            lixeira_service.atualizar_posicoes(lixeiras)
 
     # =========================
     # TECLADO
@@ -124,17 +129,17 @@ while rodando:
 
 
     if keys[K_RIGHT]:
-        residuo.mover(10, 0)
+        residuo.mover(velocidade_x, 0)
 
     if keys[K_LEFT]:
-        residuo.mover(-10, 0)
+        residuo.mover(-velocidade_x, 0)
 
 
     # =========================
     # QUEDA DO RESÍDUO
     # =========================
 
-    residuo.mover(0, 5)
+    residuo.mover(0, velocidade_y)
 
 
     if residuo.y >= config.ALTURA_TELA:
@@ -149,15 +154,16 @@ while rodando:
             )
         )
 
+        pontuacao+=5
+        background = background_service.atualizar_background(pontuacao)
     # =========================
     # DESENHO
     # =========================
 
     tela.blit(
-        img_bkg,
+        background,
         (0, 0)
     )
-
 
     tela.blit(
          residuo.imagem,
@@ -166,6 +172,15 @@ while rodando:
             residuo.y
         )
     )
+
+    for lixeira in lixeiras:
+        tela.blit(
+            lixeira.imagem,
+            (
+                lixeira.x,
+                lixeira.y
+            )
+        )
 
 
     pygame.display.flip()
