@@ -8,14 +8,14 @@ class ColisaoService:
             # else:
             #     pontuacao -= 5
             residuo.ativo = False
-            print(sessao.pontuacao,
-            "RESIDUO:",
-            residuo.rect,
-            residuo.tipo,
-            "LIXEIRA:",
-            lixeira.rect,
-            lixeira.tipo, True
-            )
+            # print(sessao.pontuacao,
+            # "RESIDUO:",
+            # residuo.rect,
+            # residuo.tipo,
+            # "LIXEIRA:",
+            # lixeira.rect,
+            # lixeira.tipo, True
+            # )
             return True
 
             

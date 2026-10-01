@@ -148,15 +148,14 @@ while rodando:
 
         if pygame.time.get_ticks() - tempo_colisao >= 1000:
             residuo = residuo_service.escolher_residuo()
+            background = background_service.atualizar_background(sessao.pontuacao)
             tempo_colisao = None
 
     if residuo.ativo and residuo.y >= config.ALTURA_TELA:
 
+        residuo.ativo = False
         residuo = residuo_service.escolher_residuo()
-
-        background = background_service.atualizar_background(
-            sessao.pontuacao
-        )
+        background = background_service.atualizar_background(sessao.pontuacao)
     
     # =========================
     # DESENHO
