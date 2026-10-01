@@ -10,9 +10,16 @@ class Residuo:
         self.tipo = tipo
 
         self.imagem_original = imagem
-        self.imagem = imagem
 
         self.largura, self.altura = self.calcular_tamanho()
+
+        self.imagem = pygame.transform.scale(
+            self.imagem_original,
+            (
+                int(self.largura),
+                int(self.altura)
+            )
+        )
 
         self.x = random.randint(
             0,
@@ -48,6 +55,14 @@ class Residuo:
         self.largura, self.altura = self.calcular_tamanho()
 
         self.x = centro_x - self.largura / 2
+
+        self.imagem = pygame.transform.scale(
+                self.imagem_original,
+                (
+                    int(self.largura),
+                    int(self.altura)
+                )
+            )
 
     # def centralizar_x(self):
     #     centro_x = config.LARGURA_TELA / 2

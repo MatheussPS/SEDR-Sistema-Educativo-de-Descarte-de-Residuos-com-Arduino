@@ -10,7 +10,6 @@ class Lixeira:
         self.tipo = tipo
 
         self.imagem_original = imagem
-        self.imagem = imagem
 
         self.x = pos_x
         self.y = pos_y
@@ -23,6 +22,13 @@ class Lixeira:
                 int(self.largura),
                 int(self.altura)
             )
+        )
+
+        self.rect = pygame.Rect(
+            self.x,
+            self.y,
+            self.largura,
+            self.altura
         )
 
     def calcular_tamanho(self):

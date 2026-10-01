@@ -47,16 +47,8 @@ lixeira_service.atualizar_posicoes(lixeiras)
 # =========================
 
 residuo_service = ResiduoService()
-
 residuo = residuo_service.escolher_residuo()
 
-residuo.imagem = pygame.transform.scale(
-    residuo.imagem_original,
-    (
-        int(residuo.largura),
-        int(residuo.altura)
-    )
-)
 
 # =========================
 # LOOP
@@ -101,24 +93,11 @@ while rodando:
 
             
             residuo.atualizar_tamanho()
-            residuo.imagem = pygame.transform.scale(
-                residuo.imagem_original,
-                (
-                    int(residuo.largura),
-                    int(residuo.altura)
-                )
-            )
             
             
             for lixeira in lixeiras:
                 lixeira.atualizar_tamanho()
-                lixeira.imagem = pygame.transform.scale(
-                    lixeira.imagem_original,
-                    (
-                        int(lixeira.largura),
-                        int(lixeira.altura)
-                    ) 
-                )
+        
             lixeira_service.atualizar_posicoes(lixeiras)
 
     # =========================
@@ -145,15 +124,7 @@ while rodando:
     if residuo.y >= config.ALTURA_TELA:
         # residuo.y = 0
         residuo = residuo_service.escolher_residuo()
-        
-        residuo.imagem = pygame.transform.scale(
-        residuo.imagem_original,
-            (
-                int(residuo.largura),
-                int(residuo.altura)
-            )
-        )
-
+    
         pontuacao+=5
         background = background_service.atualizar_background(pontuacao)
     # =========================
