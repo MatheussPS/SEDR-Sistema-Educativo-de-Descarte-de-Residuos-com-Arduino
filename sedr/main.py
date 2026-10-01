@@ -44,9 +44,7 @@ img_bkg = pygame.transform.scale(
 
 residuo_service = ResiduoService()
 
-residuo = residuo_service.escolher_residuo(
-    config.LARGURA_TELA / 2
-)
+residuo = residuo_service.escolher_residuo()
 
 residuo.imagem = pygame.transform.scale(
     residuo.imagem_original,
@@ -109,7 +107,6 @@ while rodando:
             # Objetos
 
             residuo.atualizar_tamanho()
-            residuo.centralizar_x()
 
             residuo.imagem = pygame.transform.scale(
                             residuo.imagem_original,
@@ -142,7 +139,7 @@ while rodando:
 
     if residuo.y >= config.ALTURA_TELA:
         # residuo.y = 0
-        residuo = residuo_service.escolher_residuo(config.LARGURA_TELA / 2)
+        residuo = residuo_service.escolher_residuo()
         
         residuo.imagem = pygame.transform.scale(
         residuo.imagem_original,

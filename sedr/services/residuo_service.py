@@ -8,7 +8,7 @@ class ResiduoService:
 
     CAMINHO_RESIDUOS = "assets/residuos"
 
-    def escolher_residuo(self, centro_x):
+    def escolher_residuo(self):
 
         # Escolhe o tipo de resíduo
         tipos = [ nome 
@@ -38,5 +38,4 @@ class ResiduoService:
         return Residuo(
             tipo,
             imagem,
-            centro_x
         )
