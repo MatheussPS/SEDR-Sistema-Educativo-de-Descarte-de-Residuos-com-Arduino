@@ -54,6 +54,7 @@ residuo = residuo_service.escolher_residuo()
 
 opcao_selecionada = 'v'
 
+
 def reiniciar_jogo():
     global residuo, background, tempo_colisao, opcao_selecionada
     
@@ -67,6 +68,14 @@ def reiniciar_jogo():
     background = background_service.redimensionar()
     tempo_colisao = None
     opcao_selecionada = 'v'
+
+def ver_ranking():
+    pass
+
+acoes = {
+    'r': reiniciar_jogo,
+    'v': ver_ranking
+}
 
 # =========================
 # LOOP PRINCIPAL
@@ -92,13 +101,9 @@ while rodando:
 
         if evento.type == KEYDOWN:
             # Reiniciar jogo no game over
-            if sessao.game_over and evento.key == K_SPACE:
+            if sessao.game_over and evento.key == K_SPACE or evento.key == K_RETURN:
 
-                if opcao_selecionada == 'r':
-                    reiniciar_jogo()
-                
-                elif opcao_selecionada == 'v':
-                    pass
+                acoes.get(opcao_selecionada, lambda: None)()
             
         if evento.type == VIDEORESIZE:
 
