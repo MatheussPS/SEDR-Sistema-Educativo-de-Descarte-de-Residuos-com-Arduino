@@ -98,6 +98,7 @@ while rodando:
                     reiniciar_jogo()
                 
                 elif opcao_selecionada == 'v':
+                    pass
             
         if evento.type == VIDEORESIZE:
 
