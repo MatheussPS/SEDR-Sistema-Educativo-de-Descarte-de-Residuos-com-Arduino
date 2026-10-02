@@ -5,6 +5,8 @@ class ColisaoService:
         if residuo.rect.colliderect(lixeira.rect):
             if residuo.tipo == lixeira.tipo and residuo.ativo:
                 sessao.atualizar_pontuacao(5)
+            elif residuo.tipo != lixeira.tipo and residuo.ativo:
+                sessao.decrementar_vidas()
             # else:
             #     pontuacao -= 5
             residuo.ativo = False

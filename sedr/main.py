@@ -154,6 +154,7 @@ while rodando:
     if residuo.ativo and residuo.y >= config.ALTURA_TELA:
 
         residuo.ativo = False
+        sessao.decrementar_vidas()
         residuo = residuo_service.escolher_residuo()
         background = background_service.atualizar_background(sessao.pontuacao)
     
