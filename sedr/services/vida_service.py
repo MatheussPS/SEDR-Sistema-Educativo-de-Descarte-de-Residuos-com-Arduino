@@ -45,9 +45,18 @@ class VidaService:
             vida.y = margem
 
     def atualizar(self):
+        # Remove vidas se tiver mais do que deveria
         while len(self.vidas) > self.sessao.vidas:
             self.vidas.pop()
+        
+        # Adiciona vidas se tiver menos do que deveria (quando reinicia)
+        while len(self.vidas) < self.sessao.vidas:
+            tamanho = int(config.LARGURA_TELA * config.PROPORCAO_CORACAO)
+            imagem = pygame.image.load(self.CAMINHO_CORACAO).convert_alpha()
+            imagem = pygame.transform.scale(imagem, (tamanho, tamanho))
+            self.vidas.append(Vida(imagem, 0, 0))
 
+        # Redimensionar corações
         tamanho = int(config.LARGURA_TELA * config.PROPORCAO_CORACAO)
         for vida in self.vidas:
             imagem = pygame.image.load(self.CAMINHO_CORACAO).convert_alpha()
