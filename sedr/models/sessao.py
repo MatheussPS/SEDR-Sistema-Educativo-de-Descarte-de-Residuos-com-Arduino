@@ -6,7 +6,7 @@ class Sessao:
     
     def atualizar_pontuacao(self, pontos):
         self.pontuacao+=pontos
+    
     def decrementar_vidas(self):
-        self.vidas-=1
-
-        print(self.vidas)
+        if self.vidas > 0:
+            self.vidas-=1
