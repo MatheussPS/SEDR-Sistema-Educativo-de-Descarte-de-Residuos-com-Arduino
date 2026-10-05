@@ -26,8 +26,6 @@ tela = pygame.display.set_mode(
 
 pygame.display.set_caption("SEDR")
 
-velocidade_x = 10
-velocidade_y = 5
 sessao = Sessao()
 
 def atualizar_fonte():
@@ -136,15 +134,15 @@ while rodando:
         
 
         if keys[K_RIGHT]:
-            residuo.mover(velocidade_x, 0)
+            residuo.mover(sessao.velocidade_x, 0)
 
         if keys[K_LEFT]:
-            residuo.mover(-velocidade_x, 0)
+            residuo.mover(-sessao.velocidade_x, 0)
 
 
     if not sessao.game_over:
         if residuo.ativo:
-            residuo.mover(0, velocidade_y)
+            residuo.mover(0, sessao.velocidade_y)
 
         lixeira = lixeira_service.obter_lixeira(residuo)
 

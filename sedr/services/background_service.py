@@ -8,8 +8,6 @@ class BackgroundService:
     BASE_PASTA = 'padrao_fases'
     BASE_CAMINHO_BACKGROUND = "assets/background"
 
-    PONTUACOES = [100, 75, 50, 35, 20, 0]
-
     def __init__(self):
         self.imagens_originais = [
             pygame.image.load(
@@ -43,14 +41,21 @@ class BackgroundService:
         return self.imagem
 
     def atualizar_background(self, pontuacao):
-
+        # Se já perdeu, apenas retorna a imagem atual sem processar nada
         if self.game_over:
             return self.imagem
 
-        novo_nivel = 5  # padrão inicial
-        for nivel, pontuacao_minima in enumerate(self.PONTUACOES):
-            if pontuacao >= pontuacao_minima:
-                novo_nivel = nivel
+        # Usa a config centralizada NIVEIS_JOGO para determinar o nível
+        # Quanto maior a pontuação, MENOR o índice (melhor o background)
+        # Itera do início ao fim e pega o último nível atingido
+        novo_nivel = 5  # padrão inicial (pior nível - índice 5)
+        for i in range(len(config.NIVEIS_JOGO)):
+            if pontuacao >= config.NIVEIS_JOGO[i]["pontuacao"]:
+                # Mapeia do índice do nível de jogo para o índice do background
+                # Nível 0 (0 pts) -> Background 5 (pior)
+                # Nível 5 (100 pts) -> Background 0 (melhor)
+                novo_nivel = 5 - i
+            else:
                 break
 
         # SÓ redimensiona se o nível realmente mudou
@@ -64,8 +69,11 @@ class BackgroundService:
         if not self.game_over:
             self.game_over = True
             
-            self.estado_game_over = 1 if pontuacao <= self.PONTUACOES[1] else 0
+            # Usa a config centralizada para determinar qual tela de game over mostrar
+            # Se pontuação < 75, mostra tela "ruim", senão mostra tela "boa"
+            self.estado_game_over = 1 if pontuacao < config.NIVEIS_JOGO[4]["pontuacao"] else 0
 
             self.redimensionar()
         
         return self.imagem
+
