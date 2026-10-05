@@ -5,6 +5,7 @@ import sys
 
 from config import config
 from ui.game_over import desenhar_game_over
+from ui.introducao import Introducao
 
 from models.sessao import Sessao
 
@@ -25,6 +26,16 @@ tela = pygame.display.set_mode(
 )
 
 pygame.display.set_caption("SEDR")
+
+# =========================
+# ESTADOS DO JOGO
+# =========================
+# "introducao" - mostra telas de introdução
+# "jogando" - jogo rodando
+# "game_over" - jogo terminou
+
+estado_jogo = "introducao"
+introducao = Introducao()
 
 sessao = Sessao()
 
@@ -54,7 +65,11 @@ opcao_selecionada = 'v'
 
 
 def reiniciar_jogo():
-    global residuo, background, tempo_colisao, opcao_selecionada
+    global residuo, background, tempo_colisao, opcao_selecionada, estado_jogo
+    
+    # Volta para a introdução
+    estado_jogo = "introducao"
+    introducao.resetar()
     
     sessao.reiniciar()
     
@@ -98,9 +113,16 @@ while rodando:
             sys.exit()
 
         if evento.type == KEYDOWN:
+            
+            # Se está na introdução, Enter avança as telas
+            if estado_jogo == "introducao" and (evento.key == K_RETURN or evento.key == K_SPACE):
+                continua_introducao = introducao.avancar()
+                if not continua_introducao:
+                    # Acabou a introdução, começa o jogo
+                    estado_jogo = "jogando"
+            
             # Reiniciar jogo no game over
-            if sessao.game_over and evento.key == K_SPACE or evento.key == K_RETURN:
-
+            elif sessao.game_over and (evento.key == K_SPACE or evento.key == K_RETURN):
                 acoes.get(opcao_selecionada, lambda: None)()
             
         if evento.type == VIDEORESIZE:
@@ -117,6 +139,7 @@ while rodando:
             )
 
             # Atualizar elementos
+            introducao.redimensionar()  # Redimensiona as telas de introdução
             background = background_service.redimensionar()
             fonte_hud_pontuacao = atualizar_fonte()
             
@@ -130,24 +153,26 @@ while rodando:
 
     keys = pygame.key.get_pressed()
     
-    if not sessao.game_over:
-        
-
+    # =========================
+    # LÓGICA DO JOGO - só roda se estiver jogando
+    # =========================
+    
+    if estado_jogo == "jogando" and not sessao.game_over:
+        # Controle do resíduo com as setas
         if keys[K_RIGHT]:
             residuo.mover(sessao.velocidade_x, 0)
 
         if keys[K_LEFT]:
             residuo.mover(-sessao.velocidade_x, 0)
 
-
-    if not sessao.game_over:
+        # Movimento vertical automático do resíduo
         if residuo.ativo:
             residuo.mover(0, sessao.velocidade_y)
 
+        # Verifica colisão com lixeira
         lixeira = lixeira_service.obter_lixeira(residuo)
 
         if lixeira:
-
             colidiu = colisao_service.verificar_colisao(
                 residuo,
                 lixeira,
@@ -158,8 +183,8 @@ while rodando:
                 if tempo_colisao is None:
                     tempo_colisao = pygame.time.get_ticks()
 
+        # Aguarda 1 segundo após colisão antes de gerar novo resíduo
         if tempo_colisao is not None:
-
             if pygame.time.get_ticks() - tempo_colisao >= 1000:
                 # Verifica se entrou em game over após a colisão
                 if sessao.game_over:
@@ -171,7 +196,6 @@ while rodando:
 
         # Resíduo caiu fora da tela
         if residuo.ativo and residuo.y >= config.ALTURA_TELA:
-
             residuo.ativo = False
             sessao.decrementar_vidas()
 
@@ -187,42 +211,49 @@ while rodando:
     # DESENHO
     # =========================
 
-    if sessao.game_over and not background_service.game_over:
-        background = background_service.disparar_game_over(sessao.pontuacao)
-
-    margem = config.LARGURA_TELA * config.MARGEM_HUD
+    # Se está na introdução, só desenha a tela de introdução
+    if estado_jogo == "introducao":
+        introducao.atualizar()  # Atualiza o efeito de piscar
+        introducao.desenhar(tela)
     
+    # Se está jogando ou em game over, desenha o jogo
+    else:
+        if sessao.game_over and not background_service.game_over:
+            background = background_service.disparar_game_over(sessao.pontuacao)
 
-    tela.blit(background, (0, 0))
-    
-    # Desenhar resíduo
-    if residuo.ativo and not sessao.game_over:
-        tela.blit(residuo.imagem, (residuo.x, residuo.y))
-
-    
-    if not sessao.game_over:
-        pontuacao_hud = fonte_hud_pontuacao.render(f"Pontuação: {sessao.pontuacao}", True, (255, 255, 255))
-        tela.blit(pontuacao_hud, (margem, margem))
-
-        for lixeira in lixeiras:
-            tela.blit(
-                lixeira.imagem,
-                (lixeira.x, lixeira.y)
-            )
-    
-
-    vida_service.atualizar()
-    vida_service.desenhar(tela)
-    
-    if sessao.game_over:
+        margem = config.LARGURA_TELA * config.MARGEM_HUD
         
-        if keys[K_UP]:
-            opcao_selecionada = 'v'
+
+        tela.blit(background, (0, 0))
         
-        if keys[K_DOWN]:
-            opcao_selecionada = 'r'
+        # Desenhar resíduo
+        if residuo.ativo and not sessao.game_over:
+            tela.blit(residuo.imagem, (residuo.x, residuo.y))
+
         
-        desenhar_game_over(tela, sessao, config.LARGURA_TELA, config.ALTURA_TELA, opcao_selecionada)
+        if not sessao.game_over:
+            pontuacao_hud = fonte_hud_pontuacao.render(f"Pontuação: {sessao.pontuacao}", True, (255, 255, 255))
+            tela.blit(pontuacao_hud, (margem, margem))
+
+            for lixeira in lixeiras:
+                tela.blit(
+                    lixeira.imagem,
+                    (lixeira.x, lixeira.y)
+                )
+        
+
+        vida_service.atualizar()
+        vida_service.desenhar(tela)
+        
+        if sessao.game_over:
+            
+            if keys[K_UP]:
+                opcao_selecionada = 'v'
+            
+            if keys[K_DOWN]:
+                opcao_selecionada = 'r'
+            
+            desenhar_game_over(tela, sessao, config.LARGURA_TELA, config.ALTURA_TELA, opcao_selecionada)
         
 
     pygame.display.flip()
