@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 
+import os
 import sys
 
 from config import config
@@ -14,6 +15,7 @@ from services.lixeira_service import LixeiraService
 from services.background_service import BackgroundService
 from services.colisao_service import ColisaoService
 from services.vida_service import VidaService
+from services.joystick_serial import JoystickSerial
 
 pygame.init()
 
@@ -63,6 +65,19 @@ residuo = residuo_service.escolher_residuo()
 
 opcao_selecionada = 'v'
 
+porta_arduino = os.getenv("SEDR_ARDUINO_PORT")
+if porta_arduino:
+    joystick_serial = JoystickSerial(porta_arduino)
+    print(f"Joystick Arduino conectado na porta {porta_arduino}.")
+else:
+    joystick_serial = None
+    print(
+        "Joystick Arduino desativado. Defina SEDR_ARDUINO_PORT "
+        "(por exemplo, COM3) antes de iniciar o jogo."
+    )
+botao_joystick_anterior = False
+botao_c_anterior = False
+
 
 def reiniciar_jogo():
     global residuo, background, tempo_colisao, opcao_selecionada, estado_jogo
@@ -102,6 +117,33 @@ while rodando:
 
     clock.tick(config.FPS)
 
+    estado_joystick = (
+        joystick_serial.ler_estado()
+        if joystick_serial
+        else None
+    )
+    botao_joystick_pressionado = (
+        estado_joystick.botao
+        and not botao_joystick_anterior
+        if estado_joystick
+        else False
+    )
+    botao_joystick_anterior = (
+        estado_joystick.botao if estado_joystick else False
+    )
+    botao_c_pressionado = (
+        estado_joystick.botao_c
+        and not botao_c_anterior
+        if estado_joystick
+        else False
+    )
+    botao_c_anterior = (
+        estado_joystick.botao_c if estado_joystick else False
+    )
+    botao_confirmacao_pressionado = (
+        botao_joystick_pressionado or botao_c_pressionado
+    )
+
     # =========================
     # EVENTOS
     # =========================
@@ -109,6 +151,8 @@ while rodando:
     for evento in pygame.event.get():
 
         if evento.type == QUIT:
+            if joystick_serial:
+                joystick_serial.fechar()
             pygame.quit()
             sys.exit()
 
@@ -121,8 +165,13 @@ while rodando:
                     # Acabou a introdução, começa o jogo
                     estado_jogo = "jogando"
             
-            # Reiniciar jogo no game over
-            elif sessao.game_over and (evento.key == K_SPACE or evento.key == K_RETURN):
+            elif sessao.game_over and evento.key == K_r:
+                reiniciar_jogo()
+
+            # Confirmar opção selecionada no game over
+            elif sessao.game_over and (
+                evento.key == K_SPACE or evento.key == K_RETURN
+            ):
                 acoes.get(opcao_selecionada, lambda: None)()
             
         if evento.type == VIDEORESIZE:
@@ -152,6 +201,14 @@ while rodando:
             vida_service.atualizar_posicoes()
 
     keys = pygame.key.get_pressed()
+
+    if botao_confirmacao_pressionado:
+        if estado_jogo == "introducao":
+            continua_introducao = introducao.avancar()
+            if not continua_introducao:
+                estado_jogo = "jogando"
+        elif sessao.game_over:
+            acoes.get(opcao_selecionada, lambda: None)()
     
     # =========================
     # LÓGICA DO JOGO - só roda se estiver jogando
@@ -159,10 +216,14 @@ while rodando:
     
     if estado_jogo == "jogando" and not sessao.game_over:
         # Controle do resíduo com as setas
-        if keys[K_RIGHT]:
+        if keys[K_RIGHT] or (
+            estado_joystick and estado_joystick.x > 650
+        ):
             residuo.mover(sessao.velocidade_x, 0)
 
-        if keys[K_LEFT]:
+        if keys[K_LEFT] or (
+            estado_joystick and estado_joystick.x < 350
+        ):
             residuo.mover(-sessao.velocidade_x, 0)
 
         # Movimento vertical automático do resíduo
@@ -247,10 +308,14 @@ while rodando:
         
         if sessao.game_over:
             
-            if keys[K_UP]:
+            if keys[K_UP] or (
+                estado_joystick and estado_joystick.y > 650
+            ):
                 opcao_selecionada = 'v'
             
-            if keys[K_DOWN]:
+            if keys[K_DOWN] or (
+                estado_joystick and estado_joystick.y < 350
+            ):
                 opcao_selecionada = 'r'
             
             desenhar_game_over(tela, sessao, config.LARGURA_TELA, config.ALTURA_TELA, opcao_selecionada)
