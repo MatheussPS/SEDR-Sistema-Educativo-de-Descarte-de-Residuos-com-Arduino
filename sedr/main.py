@@ -16,7 +16,6 @@ from services.background_service import BackgroundService
 from services.colisao_service import ColisaoService
 from services.vida_service import VidaService
 from services.joystick_serial import JoystickSerial
-from services.led_service import LedService
 
 pygame.init()
 
@@ -55,6 +54,7 @@ fonte_hud_pontuacao = atualizar_fonte()
 vida_service = VidaService(sessao)
 background_service = BackgroundService()
 background = background_service.redimensionar()
+colisao_service = ColisaoService()
 
 lixeira_service = LixeiraService()
 lixeira_service.atualizar_posicoes()
@@ -78,20 +78,10 @@ else:
 botao_joystick_anterior = False
 botao_c_anterior = False
 
-# LEDs das lixeiras (no Arduino). Sem Arduino conectado, não faz nada.
-led_service = LedService(joystick_serial)
-
-# Quando o jogador acerta a lixeira, acende o LED da cor correspondente
-colisao_service = ColisaoService(
-    ao_acertar=lambda lixeira: led_service.acender_lixeira(lixeira.tipo)
-)
-
 
 def reiniciar_jogo():
     global residuo, background, tempo_colisao, opcao_selecionada, estado_jogo
     
-    led_service.apagar_todos()
-
     # Volta para a introdução
     estado_jogo = "introducao"
     introducao.resetar()
@@ -161,7 +151,6 @@ while rodando:
     for evento in pygame.event.get():
 
         if evento.type == QUIT:
-            led_service.apagar_todos()
             if joystick_serial:
                 joystick_serial.fechar()
             pygame.quit()

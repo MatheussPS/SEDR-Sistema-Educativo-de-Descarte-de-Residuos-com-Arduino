@@ -116,31 +116,6 @@ class JoystickSerial:
             botao_c=bool(botao_c)
         )
 
-    def enviar_linha(self, texto: str) -> bool:
-        """Envia um comando de texto ao Arduino (terminado em '\\n').
-
-        Retorna True se o comando foi escrito na porta serial. Se o Arduino
-        não estiver conectado, retorna False sem gerar erro, para que o jogo
-        continue funcionando apenas com o teclado.
-        """
-        if self._serial is None:
-            return False
-
-        import serial
-
-        try:
-            self._serial.write(f"{texto}\n".encode("ascii"))
-            return True
-        except (serial.SerialException, OSError) as erro:
-            print(
-                f"Aviso: não foi possível enviar '{texto}' ao Arduino "
-                f"({erro}). O jogo continuará usando o teclado."
-            )
-            self._serial = None
-            self._buffer.clear()
-            self._estado = EstadoJoystick()
-            return False
-
     def fechar(self) -> None:
         if self._serial is not None:
             self._serial.close()
