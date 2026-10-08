@@ -3,13 +3,15 @@ from config import config
 
 class Sessao:
 
-    def __init__(self):
+    def __init__(self, ranking_service=None):
         self.pontuacao = 0
         self.vidas = 3
         self.game_over = False
         self.velocidade_x = config.NIVEIS_JOGO[0]["velocidade_x"]
         self.velocidade_y = config.NIVEIS_JOGO[0]["velocidade_y"]
         self.nivel_atual = 0  # Controla qual nível do jogo estamos
+        self.ranking_service = ranking_service
+        self.pontuacao_salva = False  # Flag para evitar salvar múltiplas vezes
     
     def atualizar_pontuacao(self, pontos):
         self.pontuacao += pontos
@@ -22,6 +24,10 @@ class Sessao:
             
         if self.vidas <= 0:
             self.game_over = True
+            # Salva a pontuação no ranking quando o game over acontece
+            if self.ranking_service and not self.pontuacao_salva:
+                self.ranking_service.salvar_pontuacao(self.pontuacao)
+                self.pontuacao_salva = True
     
     def atualizar_velocidade(self):
         # Percorre os níveis de trás pra frente (do maior para o menor)
@@ -42,3 +48,4 @@ class Sessao:
         self.velocidade_x = config.NIVEIS_JOGO[0]["velocidade_x"]
         self.velocidade_y = config.NIVEIS_JOGO[0]["velocidade_y"]
         self.nivel_atual = 0
+        self.pontuacao_salva = False  # Reseta a flag ao reiniciar
