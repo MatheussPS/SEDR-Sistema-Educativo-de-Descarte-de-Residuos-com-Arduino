@@ -7,6 +7,7 @@ import sys
 from config import config
 from ui.game_over import desenhar_game_over
 from ui.introducao import Introducao
+from ui.ranking import Ranking
 
 from models.sessao import Sessao
 
@@ -17,6 +18,7 @@ from services.colisao_service import ColisaoService
 from services.vida_service import VidaService
 from services.joystick_serial import JoystickSerial
 from services.led_service import LedService
+from services.ranking_service import RankingService
 
 pygame.init()
 
@@ -36,11 +38,23 @@ pygame.display.set_caption("SEDR")
 # "introducao" - mostra telas de introdução
 # "jogando" - jogo rodando
 # "game_over" - jogo terminou
+# "ranking" - exibe o ranking
 
 estado_jogo = "introducao"
 introducao = Introducao()
 
-sessao = Sessao()
+# Inicializa o ranking service
+ranking_service = RankingService()
+
+# Inicializa a sessão com o ranking service
+sessao = Sessao(ranking_service)
+
+# Inicializa a tela de ranking
+ranking = Ranking(ranking_service)
+
+# Variáveis de controle do joystick no ranking
+ultimo_movimento_joystick_ranking = 0
+intervalo_movimento_ranking = 200  # milissegundos entre movimentos
 
 def atualizar_fonte():
     tamanho_fonte = int(config.LARGURA_TELA * config.PROPORCAO_FONTE_PONTUACAO)
@@ -108,7 +122,9 @@ def reiniciar_jogo():
     opcao_selecionada = 'v'
 
 def ver_ranking():
-    pass
+    global estado_jogo
+    estado_jogo = "ranking"
+    ranking.carregar_pontuacoes(sessao.pontuacao)
 
 acoes = {
     'r': reiniciar_jogo,
@@ -176,6 +192,15 @@ while rodando:
                     # Acabou a introdução, começa o jogo
                     estado_jogo = "jogando"
             
+            elif estado_jogo == "ranking":
+                # Navegação no ranking
+                if evento.key == K_UP:
+                    ranking.scroll_up()
+                elif evento.key == K_DOWN:
+                    ranking.scroll_down()
+                elif evento.key == K_RETURN:
+                    reiniciar_jogo()
+            
             elif sessao.game_over and evento.key == K_r:
                 reiniciar_jogo()
 
@@ -202,6 +227,8 @@ while rodando:
             introducao.redimensionar()  # Redimensiona as telas de introdução
             background = background_service.redimensionar()
             fonte_hud_pontuacao = atualizar_fonte()
+            ranking.atualizar_fontes()  # Atualiza as fontes do ranking
+            ranking.calcular_area_renderizacao()  # Recalcula quantas pontuações cabem
             
             residuo.atualizar_tamanho()
             
@@ -218,8 +245,21 @@ while rodando:
             continua_introducao = introducao.avancar()
             if not continua_introducao:
                 estado_jogo = "jogando"
+        elif estado_jogo == "ranking":
+            reiniciar_jogo()
         elif sessao.game_over:
             acoes.get(opcao_selecionada, lambda: None)()
+    
+    # Controle do joystick no ranking com debounce
+    if estado_jogo == "ranking" and estado_joystick:
+        tempo_atual = pygame.time.get_ticks()
+        if tempo_atual - ultimo_movimento_joystick_ranking >= intervalo_movimento_ranking:
+            if estado_joystick.y > 650:  # Para cima
+                ranking.scroll_up()
+                ultimo_movimento_joystick_ranking = tempo_atual
+            elif estado_joystick.y < 350:  # Para baixo
+                ranking.scroll_down()
+                ultimo_movimento_joystick_ranking = tempo_atual
     
     # =========================
     # LÓGICA DO JOGO - só roda se estiver jogando
@@ -287,6 +327,13 @@ while rodando:
     if estado_jogo == "introducao":
         introducao.atualizar()  # Atualiza o efeito de piscar
         introducao.desenhar(tela)
+    
+    # Se está no ranking, desenha a tela de ranking
+    elif estado_jogo == "ranking":
+        # Desenha o background do jogo como fundo
+        tela.blit(background, (0, 0))
+        # Sobrepõe a tela de ranking
+        ranking.desenhar(tela)
     
     # Se está jogando ou em game over, desenha o jogo
     else:
