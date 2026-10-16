@@ -11,7 +11,7 @@ class BackgroundService:
     def __init__(self):
         self.imagens_originais = [
             pygame.image.load(
-                f'{self.BASE_CAMINHO_BACKGROUND}/{self.BASE_PASTA}/{self.BASE_ASSET}{i}.jpeg'
+                f'{self.BASE_CAMINHO_BACKGROUND}/{self.BASE_PASTA}/{self.BASE_ASSET}{i}.jpg'
             ).convert()
             for i in range(self.TOTAL_NIVEIS)
         ]
