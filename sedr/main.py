@@ -11,6 +11,7 @@ from ui.ranking import Ranking
 
 from models.sessao import Sessao
 
+from services.som_service import SomService
 from services.residuo_service import ResiduoService
 from services.lixeira_service import LixeiraService
 from services.background_service import BackgroundService
@@ -21,6 +22,7 @@ from services.led_service import LedService
 from services.ranking_service import RankingService
 
 pygame.init()
+pygame.mixer.init()
 
 tela = pygame.display.set_mode(
     (
@@ -50,7 +52,7 @@ ranking_service = RankingService()
 sessao = Sessao(ranking_service)
 
 # Inicializa a tela de ranking
-ranking = Ranking(ranking_service)
+ranking = Ranking(ranking_service, ao_navegar=lambda: som_service.tocar("navegacao", volume=0.5))
 
 # Variáveis de controle do joystick no ranking
 ultimo_movimento_joystick_ranking = 0
@@ -77,6 +79,8 @@ lixeiras = lixeira_service.lixeiras
 residuo_service = ResiduoService()
 residuo = residuo_service.escolher_residuo()
 
+som_service = SomService()
+
 opcao_selecionada = 'v'
 
 porta_arduino = os.getenv("SEDR_ARDUINO_PORT")
@@ -97,13 +101,18 @@ led_service = LedService(joystick_serial)
 
 # Quando o jogador acerta a lixeira, acende o LED da cor correspondente
 colisao_service = ColisaoService(
-    ao_acertar=lambda lixeira: led_service.acender_lixeira(lixeira.tipo)
+    ao_acertar=lambda lixeira: (
+        led_service.acender_lixeira(lixeira.tipo),
+        som_service.tocar("acerto", volume=0.5)
+    ),
+    ao_errar=lambda: som_service.tocar("erro", volume=0.5)
 )
 
 
 def reiniciar_jogo():
     global residuo, background, tempo_colisao, opcao_selecionada, estado_jogo
     
+    som_service.tocar("select", volume=0.5)
     led_service.apagar_todos()
 
     # Volta para a introdução
@@ -123,6 +132,7 @@ def reiniciar_jogo():
 
 def ver_ranking():
     global estado_jogo
+    som_service.tocar("select", volume=0.5)
     estado_jogo = "ranking"
     ranking.carregar_pontuacoes(sessao.pontuacao)
 
@@ -187,7 +197,7 @@ while rodando:
             
             # Se está na introdução, Enter avança as telas
             if estado_jogo == "introducao" and (evento.key == K_RETURN or evento.key == K_SPACE):
-                continua_introducao = introducao.avancar()
+                continua_introducao = introducao.avancar(lambda: som_service.tocar("select", volume=0.5))
                 if not continua_introducao:
                     # Acabou a introdução, começa o jogo
                     estado_jogo = "jogando"
@@ -242,9 +252,10 @@ while rodando:
 
     if botao_confirmacao_pressionado:
         if estado_jogo == "introducao":
-            continua_introducao = introducao.avancar()
+            continua_introducao = introducao.avancar(lambda: som_service.tocar("select", volume=0.5))
             if not continua_introducao:
                 estado_jogo = "jogando"
+                
         elif estado_jogo == "ranking":
             reiniciar_jogo()
         elif sessao.game_over:
@@ -310,6 +321,7 @@ while rodando:
         if residuo.ativo and residuo.y >= config.ALTURA_TELA:
             residuo.ativo = False
             sessao.decrementar_vidas()
+            som_service.tocar("erro", volume=0.5)
 
             # Verifica se entrou em game over
             if sessao.game_over:
@@ -366,6 +378,9 @@ while rodando:
         
         if sessao.game_over:
             
+            # Variável para detectar mudança de opção
+            opcao_anterior = opcao_selecionada
+            
             if keys[K_UP] or (
                 estado_joystick and estado_joystick.y > 650
             ):
@@ -375,6 +390,10 @@ while rodando:
                 estado_joystick and estado_joystick.y < 350
             ):
                 opcao_selecionada = 'r'
+            
+            # Toca som de navegação se a opção mudou
+            if opcao_selecionada != opcao_anterior:
+                som_service.tocar("navegacao", volume=0.7)
             
             desenhar_game_over(tela, sessao, config.LARGURA_TELA, config.ALTURA_TELA, opcao_selecionada)
         

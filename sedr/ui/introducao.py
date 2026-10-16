@@ -68,11 +68,15 @@ class Introducao:
         else:
             screen.blit(self.imagem_1, (0, 0))
     
-    def avancar(self):
+    def avancar(self, som_callback=None):
         if self.tela_atual == 0:
             self.tela_atual = 1
+            if som_callback:
+                som_callback()
             return True  # Ainda há mais telas
         else:
+            if som_callback:
+                som_callback()
             return False  # Acabou, pode iniciar o jogo
     
     def resetar(self):

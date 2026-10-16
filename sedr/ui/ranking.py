@@ -8,12 +8,13 @@ class Ranking:
     Calcula dinamicamente quantas pontuações cabem na tela baseado no tamanho da fonte.
     """
     
-    def __init__(self, ranking_service):
+    def __init__(self, ranking_service, ao_navegar=None):
         self.ranking_service = ranking_service
         self.pontuacoes = []
         self.offset = 0  # Índice de scroll
         self.pontuacao_atual = None  # Pontuação da sessão atual para destacar
         self.indice_pontuacao_atual = -1  # Índice da pontuação a destacar
+        self.ao_navegar = ao_navegar  # Callback para tocar som ao navegar
         
         self.atualizar_fontes()
         self.calcular_area_renderizacao()
@@ -71,6 +72,8 @@ class Ranking:
     def scroll_up(self):
         if self.offset > 0:
             self.offset -= 1
+            if self.ao_navegar:
+                self.ao_navegar()
     
     def scroll_down(self):
         # Só permite scroll se houver mais itens do que os visíveis
@@ -78,6 +81,8 @@ class Ranking:
             max_offset = len(self.pontuacoes) - self.max_visiveis
             if self.offset < max_offset:
                 self.offset += 1
+                if self.ao_navegar:
+                    self.ao_navegar()
     
     def desenhar(self, tela):
         
